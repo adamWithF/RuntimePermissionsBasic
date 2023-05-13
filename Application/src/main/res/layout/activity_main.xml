@@ -27,14 +27,9 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/horizontal_page_margin"
         android:text="@string/intro" />
-
-    <Button
-        android:id="@+id/button_open_camera"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/open_camera_preview" />
 </LinearLayout>

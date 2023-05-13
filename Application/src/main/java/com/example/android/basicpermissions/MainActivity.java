@@ -16,6 +16,7 @@
 
 package com.example.android.basicpermissions;
 
+// import android.util.log;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -23,13 +24,18 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
+import android.provider.Settings;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.example.android.basicpermissions.camera.CameraPreviewActivity;
 import com.google.android.material.snackbar.Snackbar;
+
+import com.example.android.basicpermissions.MyApplication;
 
 /**
  * Launcher Activity that demonstrates the use of runtime permissions for Android M.
@@ -59,95 +65,156 @@ public class MainActivity extends AppCompatActivity
     private static final int PERMISSION_REQUEST_CAMERA = 0;
 
     private View mLayout;
+    private TextView text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mLayout = findViewById(R.id.main_layout);
+        // mLayout = findViewById(R.id.main_layout);
+        text = findViewById(R.id.text);
+        text.setText(this.getDeviceSuperInfo());
+
+
 
         // Register a listener for the 'Show Camera Preview' button.
-        findViewById(R.id.button_open_camera).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showCameraPreview();
-            }
-        });
+        // findViewById(R.id.button_open_camera).setOnClickListener(new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View view) {
+                // showCameraPreview();
+            // }
+        // });
     }
+
+private String getDeviceSuperInfo() {
+  String s = "Debug-infos:";
+
+    try {
+        s += "\n OS Version: "      + System.getProperty("os.version")      + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
+        s += "\n OS API Level: "    + android.os.Build.VERSION.SDK_INT;
+        s += "\n Device: "          + android.os.Build.DEVICE;
+        s += "\n Model (and Product): " + android.os.Build.MODEL            + " ("+ android.os.Build.PRODUCT + ")";
+
+        s += "\n RELEASE: "         + android.os.Build.VERSION.RELEASE;
+        s += "\n BRAND: "           + android.os.Build.BRAND;
+        s += "\n DISPLAY: "         + android.os.Build.DISPLAY;
+        s += "\n CPU_ABI: "         + android.os.Build.CPU_ABI;
+        s += "\n CPU_ABI2: "        + android.os.Build.CPU_ABI2;
+        s += "\n UNKNOWN: "         + android.os.Build.UNKNOWN;
+        s += "\n HARDWARE: "        + android.os.Build.HARDWARE;
+        s += "\n Build ID: "        + android.os.Build.ID;
+        s += "\n MANUFACTURER: "    + android.os.Build.MANUFACTURER;
+        s += "\n SERIAL: "          + android.os.Build.SERIAL;
+        s += "\n USER: "            + android.os.Build.USER;
+        s += "\n HOST: "            + android.os.Build.HOST;
+        s += "\n ANDROID ID: "      + Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+        s += "\n LOGGING ID: "      + Settings.Secure.getString(getContentResolver(),Settings.Secure.LOGGING_ID);
+
+        TelephonyManager tm = (TelephonyManager) MyApplication.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+        try {
+          s += "\n IMEI: "            + tm.getImei();
+
+        } catch (Exception e) {
+          s += "\n IMEI: "            + e.getMessage();
+        }
+
+        try {
+          s += "\n PHONE NUMBER: "    + tm.getLine1Number();
+
+        } catch (Exception e) {
+          s += "\n PHONE NUMBER: "    + e.getMessage();
+        }
+
+        try {
+          s += "\n DEVICE ID: "       + tm.getDeviceId();
+
+        } catch (Exception e) {
+          s += "\n DEVICE ID: "       + e.getMessage();
+        }
+
+        return s;
+
+    } catch (Exception e) {
+      return e.getMessage();
+        // Log.e(TAG, "Error getting Device INFO");
+    }
+}
+  //end getDeviceSuperInfo
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         // BEGIN_INCLUDE(onRequestPermissionsResult)
-        if (requestCode == PERMISSION_REQUEST_CAMERA) {
-            // Request for camera permission.
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission has been granted. Start camera preview Activity.
-                Snackbar.make(mLayout, R.string.camera_permission_granted,
-                        Snackbar.LENGTH_SHORT)
-                        .show();
-                startCamera();
-            } else {
-                // Permission request was denied.
-                Snackbar.make(mLayout, R.string.camera_permission_denied,
-                        Snackbar.LENGTH_SHORT)
-                        .show();
-            }
-        }
+        // if (requestCode == PERMISSION_REQUEST_CAMERA) {
+        //     // Request for camera permission.
+        //     if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        //         // Permission has been granted. Start camera preview Activity.
+        //         Snackbar.make(mLayout, R.string.camera_permission_granted,
+        //                 Snackbar.LENGTH_SHORT)
+        //                 .show();
+        //         startCamera();
+        //     } else {
+        //         // Permission request was denied.
+        //         Snackbar.make(mLayout, R.string.camera_permission_denied,
+        //                 Snackbar.LENGTH_SHORT)
+        //                 .show();
+        //     }
+        // }
         // END_INCLUDE(onRequestPermissionsResult)
     }
 
-    private void showCameraPreview() {
-        // BEGIN_INCLUDE(startCamera)
-        // Check if the Camera permission has been granted
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already available, start camera preview
-            Snackbar.make(mLayout,
-                    R.string.camera_permission_available,
-                    Snackbar.LENGTH_SHORT).show();
-            startCamera();
-        } else {
-            // Permission is missing and must be requested.
-            requestCameraPermission();
-        }
-        // END_INCLUDE(startCamera)
-    }
+    // private void showCameraPreview() {
+    //     // BEGIN_INCLUDE(startCamera)
+    //     // Check if the Camera permission has been granted
+    //     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+    //             == PackageManager.PERMISSION_GRANTED) {
+    //         // Permission is already available, start camera preview
+    //         Snackbar.make(mLayout,
+    //                 R.string.camera_permission_available,
+    //                 Snackbar.LENGTH_SHORT).show();
+    //         startCamera();
+    //     } else {
+    //         // Permission is missing and must be requested.
+    //         requestCameraPermission();
+    //     }
+    //     // END_INCLUDE(startCamera)
+    // }
 
-    /**
-     * Requests the {@link android.Manifest.permission#CAMERA} permission.
-     * If an additional rationale should be displayed, the user has to launch the request from
-     * a SnackBar that includes additional information.
-     */
-    private void requestCameraPermission() {
-        // Permission has not been granted and must be requested.
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.CAMERA)) {
-            // Provide an additional rationale to the user if the permission was not granted
-            // and the user would benefit from additional context for the use of the permission.
-            // Display a SnackBar with cda button to request the missing permission.
-            Snackbar.make(mLayout, R.string.camera_access_required,
-                    Snackbar.LENGTH_INDEFINITE).setAction(R.string.ok, new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Request the permission
-                    ActivityCompat.requestPermissions(MainActivity.this,
-                            new String[]{Manifest.permission.CAMERA},
-                            PERMISSION_REQUEST_CAMERA);
-                }
-            }).show();
+    // /**
+    //  * Requests the {@link android.Manifest.permission#CAMERA} permission.
+    //  * If an additional rationale should be displayed, the user has to launch the request from
+    //  * a SnackBar that includes additional information.
+    //  */
+    // private void requestCameraPermission() {
+    //     // Permission has not been granted and must be requested.
+    //     if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+    //             Manifest.permission.CAMERA)) {
+    //         // Provide an additional rationale to the user if the permission was not granted
+    //         // and the user would benefit from additional context for the use of the permission.
+    //         // Display a SnackBar with cda button to request the missing permission.
+    //         Snackbar.make(mLayout, R.string.camera_access_required,
+    //                 Snackbar.LENGTH_INDEFINITE).setAction(R.string.ok, new View.OnClickListener() {
+    //             @Override
+    //             public void onClick(View view) {
+    //                 // Request the permission
+    //                 ActivityCompat.requestPermissions(MainActivity.this,
+    //                         new String[]{Manifest.permission.CAMERA},
+    //                         PERMISSION_REQUEST_CAMERA);
+    //             }
+    //         }).show();
 
-        } else {
-            Snackbar.make(mLayout, R.string.camera_unavailable, Snackbar.LENGTH_SHORT).show();
-            // Request the permission. The result will be received in onRequestPermissionResult().
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
-        }
-    }
+    //     } else {
+    //         Snackbar.make(mLayout, R.string.camera_unavailable, Snackbar.LENGTH_SHORT).show();
+    //         // Request the permission. The result will be received in onRequestPermissionResult().
+    //         ActivityCompat.requestPermissions(this,
+    //                 new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+    //     }
+    // }
 
-    private void startCamera() {
-        Intent intent = new Intent(this, CameraPreviewActivity.class);
-        startActivity(intent);
-    }
+    // private void startCamera() {
+    //     Intent intent = new Intent(this, CameraPreviewActivity.class);
+    //     startActivity(intent);
+    // }
 
 }
